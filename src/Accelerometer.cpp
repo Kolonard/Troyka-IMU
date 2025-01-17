@@ -3,6 +3,7 @@
 Accelerometer::Accelerometer(uint8_t slaveAddress)
     : BaseIMU(slaveAddress) { }
 
+#ifndef SOFT_I2C_MODE_
 void Accelerometer::begin(TwoWire& wire) {
     _wire = &wire;
     _wire->begin();
@@ -13,6 +14,20 @@ void Accelerometer::begin(TwoWire& wire) {
     _writeByte(BASE_IMU_CTRL_REG1, data);
     setRange(AccelerometerRange::RANGE_2G);
 }
+#else
+void Accelerometer::begin(SoftI2C& wire) {
+    _wire = &wire;
+    _wire->begin();
+    _scalingFactor = 1;
+    uint8_t data = LIS331DLH_CTRL_REG1_X_EN | LIS331DLH_CTRL_REG1_Y_EN
+                   | LIS331DLH_CTRL_REG1_Z_EN;
+    data |= LIS331DLH_CTRL_REG1_PM0;
+    _writeByte(BASE_IMU_CTRL_REG1, data);
+    setRange(AccelerometerRange::RANGE_2G);
+}
+#endif
+
+
 
 // Set range scale output data from datasheet
 void Accelerometer::setRange(AccelerometerRange range) {

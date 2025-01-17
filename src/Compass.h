@@ -2,6 +2,7 @@
 #define __COMPASS_H__
 
 #include "BaseIMU.h"
+#include <SoftI2C.h>
 
 // I²C-address device
 constexpr uint8_t LIS3MDL_SLAVE_ADDRESS = 0x1C;
@@ -32,7 +33,11 @@ enum class CompassRange {
 class Compass : public BaseIMU {
 public:
     Compass(uint8_t slaveAddress = LIS3MDL_SLAVE_ADDRESS);
+#ifndef SOFT_I2C_MODE_
     void begin(TwoWire& wire = Wire);
+#else
+    void begin(SoftI2C& wire);
+#endif
     void sleep(bool state);
     void setRange(CompassRange range);
     float readMagneticGaussX();

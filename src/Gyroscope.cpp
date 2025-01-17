@@ -2,7 +2,7 @@
 
 Gyroscope::Gyroscope(uint8_t slaveAddress)
     : BaseIMU(slaveAddress) { }
-
+#ifndef SOFT_I2C_MODE_
 void Gyroscope::begin(TwoWire& wire) {
     _wire = &wire;
     _wire->begin();
@@ -13,6 +13,18 @@ void Gyroscope::begin(TwoWire& wire) {
     _writeByte(BASE_IMU_CTRL_REG1, data);
     setRange(GyroscopeRange::RANGE_2000DPS);
 }
+#else
+void Gyroscope::begin(SoftI2C& wire) {
+    _wire = &wire;
+    _wire->begin();
+    _scalingFactor = 1;
+    uint8_t data = L3G4200D_CTRL_REG1_X_EN | L3G4200D_CTRL_REG1_Y_EN
+                   | L3G4200D_CTRL_REG1_Z_EN;
+    data |= L3G4200D_CTRL_REG1_PD;
+    _writeByte(BASE_IMU_CTRL_REG1, data);
+    setRange(GyroscopeRange::RANGE_2000DPS);
+}
+#endif
 
 // Set range scale output data from datasheet
 void Gyroscope::setRange(GyroscopeRange range) {

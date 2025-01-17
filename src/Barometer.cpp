@@ -1,22 +1,41 @@
-#include <Barometer.h>
-#include <GOST4401_81.h>
+#include <SoftI2C.h>
+#include "Barometer.h"
+#include "GOST4401_81.h"
 
 Barometer::Barometer(uint8_t slaveAddress)
     : BaseIMU(slaveAddress) { }
 
+#ifndef SOFT_I2C_MODE_
 void Barometer::begin(TwoWire& wire) {
+ 
     _wire = &wire;
     _wire->begin();
     _deviceID = readDeviceID();
     uint8_t data = 0;
     if (_deviceID == LPS331_WHO_AM_I) {
-        data |= LPS_CTRL_REG1_ODR1 | LPS_CTRL_REG1_ODR2;
+        data |= LPS_CTRL_REG1_ODR0 | LPS_CTRL_REG1_ODR1 | LPS_CTRL_REG1_ODR2;
     } else if (_deviceID == LPS25HB_WHO_AM_I) {
         data |= LPS_CTRL_REG1_ODR2;
     }
     data |= LPS_CTRL_REG1_PD;
     _writeByte(BASE_IMU_CTRL_REG1, data);
 }
+#else
+void Barometer::begin(SoftI2C& wire) {
+    
+    _wire = &wire;
+    _wire->begin();
+    _deviceID = readDeviceID();
+    uint8_t data = 0;
+    if (_deviceID == LPS331_WHO_AM_I) {
+        data |= LPS_CTRL_REG1_ODR0 | LPS_CTRL_REG1_ODR1 | LPS_CTRL_REG1_ODR2;
+    } else if (_deviceID == LPS25HB_WHO_AM_I) {
+        data |= LPS_CTRL_REG1_ODR2;
+    }
+    data |= LPS_CTRL_REG1_PD;
+    _writeByte(BASE_IMU_CTRL_REG1, data);
+}
+#endif
 
 float Barometer::readPressureMillibars() {
     return static_cast<float>(_readPressureRaw()) / 4096;

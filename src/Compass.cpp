@@ -2,7 +2,7 @@
 
 Compass::Compass(uint8_t slaveAddress)
     : BaseIMU(slaveAddress) { }
-
+#ifndef SOFT_I2C_MODE_
 void Compass::begin(TwoWire& wire) {
     _wire = &wire;
     _wire->begin();
@@ -12,6 +12,18 @@ void Compass::begin(TwoWire& wire) {
     _writeByte(BASE_IMU_CTRL_REG3, data);
     setRange(CompassRange::RANGE_4GAUSS);
 }
+#else
+void Compass::begin(SoftI2C& wire) {
+    _wire = &wire;
+    _wire->begin();
+    _scalingFactor = 1;
+    uint8_t data = 0;
+    data &= ~(LIS3MDL_CTRL_REG3_MD0 | LIS3MDL_CTRL_REG3_MD1);
+    _writeByte(BASE_IMU_CTRL_REG3, data);
+    setRange(CompassRange::RANGE_4GAUSS);
+}
+#endif
+
 
 void Compass::setRange(CompassRange range) {
     uint8_t data = _readByte(BASE_IMU_CTRL_REG2);

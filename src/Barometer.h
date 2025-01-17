@@ -2,7 +2,7 @@
 #define __BAROMETER_H__
 
 #include "BaseIMU.h"
-
+#include <SoftI2C.h>
 // I²C-address devices LPS25HB and LPS331
 constexpr uint8_t LPS_SLAVE_ADDRESS = 0x5C;
 constexpr uint8_t LPS_SLAVE_ADDRESS_ALT = 0x5D;
@@ -31,7 +31,11 @@ constexpr float MILLIBARS_TO_MILLIMETERSHG = 0.75;
 class Barometer : public BaseIMU {
 public:
     Barometer(uint8_t slaveAddress = LPS_SLAVE_ADDRESS);
+#ifndef SOFT_I2C_MODE_
     void begin(TwoWire& wire = Wire);
+#else
+    void begin(SoftI2C& wire);
+#endif
     float readPressurePascals();
     float readPressureMillibars();
     float readPressureMillimetersHg();

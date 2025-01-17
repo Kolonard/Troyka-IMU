@@ -2,7 +2,7 @@
 #define __GYROSCOPE_H__
 
 #include "BaseIMU.h"
-
+#include <SoftI2C.h>
 // I²C-address device
 constexpr uint8_t L3G4200D_SLAVE_ADDRESS = 0x68;
 constexpr uint8_t L3G4200D_SLAVE_ADDRESS_ALT = 0x69;
@@ -32,7 +32,11 @@ enum class GyroscopeRange {
 class Gyroscope : public BaseIMU {
 public:
     Gyroscope(uint8_t slaveAddress = L3G4200D_SLAVE_ADDRESS);
+#ifndef SOFT_I2C_MODE_
     void begin(TwoWire& wire = Wire);
+#else
+    void begin(SoftI2C& wire);
+#endif
     void sleep(bool state);
     void setRange(GyroscopeRange range);
     float readRotationDegX();
